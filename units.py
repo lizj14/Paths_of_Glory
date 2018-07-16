@@ -41,21 +41,32 @@ class Unit:
         self.flipped = (value==1)
 
     def __repr__(self):
-        return '{}-{}-{} {}'.format(
+        main_status = 'unit {}-{}-{} {}'.format(
             self.attack, self.defence, self.movement, self.name)
+        if self.rpCountry == None:
+            main_status += '*'
+
+        return main_status
 
     def __str__(self):
-        main_status = '{}-{}-{} {}'.format(
-            self.attack, self.defence, self.movement, self.name)
+        main_status = self.__repr__()
+        if self.mdzz:
+            main_status += '. Must take the first loss'
+
         rp_status = ''
         if self.flipped:
             rp_status += 'Currently at Reduced Strength. '
         else:
             rp_status += 'Currently at Full Strength. '
+        if self.rpCountry != None:
+            rp_status += 'Use {} RP.'.format(self.rpCountry)
+        else:
+            rp_status += 'Cannot be replaced.'
 
         ne_status = 'can SR to NE: {}, can move to NE: {}'.format(
             self.canSRNE, self.canMVNE)
 
+        return main_status+'\n'+rp_status+'\n'+ne_status
 
 
 def _duplicate_units(n, format_string, empty_no, *unit_params):
@@ -93,12 +104,12 @@ def _get_all_units():
 
 
     all_units['BRc'] = _duplicate_units(10, 'BRc', [], [2,1], [1,1], [4,4])
-    all_units['FRc'] = _duplicate_units(8, 'FRc', [], [1,1], [1,1], [4,4])
-    all_units['BEc'] = _duplicate_units(2, 'SBc', [], [1,0], [1,1], [3,3])
+    all_units['FRc'] = _duplicate_units(10, 'FRc', [], [1,1], [1,1], [4,4])
+    all_units['BEc'] = _duplicate_units(1, 'BEc', [], [1,0], [1,1], [3,3])
     all_units['ITc'] = _duplicate_units(7, 'ITc', [], [1,0], [1,1], [3,3])
     all_units['USc'] = _duplicate_units(6, 'USc', [], [2,1], [1,1], [4,4])
 
-    all_units['RUc'] = _duplicate_units(18, 'RUc', [], [1,1], [1,1], [4,4])
+    all_units['RUc'] = _duplicate_units(18, 'RUc', [], [1,1], [1,1], [3,3])
     all_units['ROc'] = _duplicate_units(6, 'ROc', [], [1,0], [1,1], [3,3])
     all_units['GRc'] = _duplicate_units(3, 'GRc', [], [1,0], [1,1], [3,3])
     all_units['SBc'] = _duplicate_units(2, 'SBc', [], [1,0], [1,1], [4,4])
@@ -114,9 +125,9 @@ def _get_all_units():
 
     return all_units
 
-def _initialize_rp():
+def _initialize_units():
     all_units = _get_all_units()
-    for key, units in all_units:
+    for key, units in all_units.items():
         for unit in units:
             if key[-1] == 'c':
                 unit.rp = 0.5
@@ -152,6 +163,10 @@ def _initialize_rp():
                 unit.canSRNE = False
             else:
                 unit.canMVNE = False
-
-
     return all_units
+
+from scenarios import *
+class UnitList:
+    def __init__(self, scenario_func=WBC_2013):
+        units = _initialize_units()
+        scenario = WBC_2013()
