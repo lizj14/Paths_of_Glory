@@ -10,5 +10,6 @@ You can also learn about the game from an anti-war movie with the same name, Pat
 - Backend: TBD
 - Model: Python
   - common.py: config file
-  - utils.py: small help functions
   - units.py: define all the units in the game
+  - scenarios.py: define the unit status in scenarios
+  - battle.py: battle, take loss, etc.
