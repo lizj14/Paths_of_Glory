@@ -1,3 +1,10 @@
+from common import *
+
+# class Unit
+# the basic unit class in pog
+# properties: name, attack, defence, movement, isflipped;
+# advanced attributes: rp, isArmy, rpCountry, can SR/MV to NE, mdzz
+# where mdzz means must take first step of loss
 class Unit:
     def __init__(self, name, atks, defs, movs):
         self._name = name
@@ -74,6 +81,7 @@ def _duplicate_units(n, format_string, empty_no, *unit_params):
         for i in range(1,n+1) if not i in empty_no]
 
 
+# generate all units in PoG and their a-d-m value
 def _get_all_units():
     all_units = {}
     all_units['GEa'] = _duplicate_units(18, 'GE{}', [13,15,16], [5,3], [3,3], [3,3])
@@ -125,6 +133,7 @@ def _get_all_units():
 
     return all_units
 
+# set advanced attributes
 def _initialize_units():
     all_units = _get_all_units()
     for key, units in all_units.items():
@@ -164,9 +173,3 @@ def _initialize_units():
             else:
                 unit.canMVNE = False
     return all_units
-
-from scenarios import *
-class UnitList:
-    def __init__(self, scenario_func=WBC_2013):
-        units = _initialize_units()
-        scenario = WBC_2013()

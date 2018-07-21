@@ -1,3 +1,5 @@
+from common import *
+
 
 def WBC_2013():
     scenario = []
