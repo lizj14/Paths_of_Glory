@@ -1,5 +1,5 @@
 import numpy as np
-
+from enum import Enum
 
 class Config:
     _version = 1.0

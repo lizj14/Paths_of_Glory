@@ -3,8 +3,7 @@ from common import *
 # class Unit
 # the basic unit class in pog
 # properties: name, attack, defence, movement, isflipped;
-# advanced attributes: rp, isArmy, rpCountry, can SR/MV to NE, mdzz
-# where mdzz means must take first step of loss
+# advanced attributes: rp, isArmy, rpCountry, can SR/MV to NE
 class Unit:
     def __init__(self, name, atks, defs, movs):
         self._name = name
@@ -13,15 +12,18 @@ class Unit:
         self._movs = movs
         self.flipped = 0
 
-        self.rp = 0
         self.isArmy = False
         self.rpCountry = None
         self.canSRNE = False
         self.canMVNE = False
-        self.mdzz = False
+
+        self.isBR = False
+        self.isRU = False
+        self.isIT = False
 
     def flip(self):
         self.flipped = 1-self.flipped
+        return self
 
     @property
     def name(self):
@@ -57,8 +59,6 @@ class Unit:
 
     def __str__(self):
         main_status = self.__repr__()
-        if self.mdzz:
-            main_status += '. Must take the first loss'
 
         rp_status = ''
         if self.flipped:
@@ -139,17 +139,10 @@ def _initialize_units():
     for key, units in all_units.items():
         for unit in units:
             if key[-1] == 'c':
-                unit.rp = 0.5
                 unit.isArmy = False
             else:
-                unit.rp = 1
                 unit.isArmy = True
                 unit.canSRNE = False
-
-            if key in ['BEF', 'BEFc', 'CAU', 'MEF', 'AUSc']:
-                unit.mdzz = True
-            else:
-                unit.mdzz = False
 
             if key[:-1] in ['BR', 'FR', 'IT', 'RU', 'US', 'GE', 'AH', 'TU', 'BU']:
                 unit.rpCountry = key[:-1]
@@ -172,4 +165,25 @@ def _initialize_units():
                 unit.canSRNE = False
             else:
                 unit.canMVNE = False
+
+            if key[:-1]=='BR':
+                unit.isBR = True
+            elif key[:-1]=='RU':
+                unit.isRU = True
+            elif key[:-1]=='IT':
+                unit.isIT = True
+            elif key in ['BEF', 'BEFc', 'CNDc', 'AUSc', 'PTc', 'Alb', 'MEF']:
+                unit.isBR = True
     return all_units
+
+def POG_units():
+    all_units = _initialize_units()
+    POG_units = {}
+    for key, units in all_units.items():
+        if key[-1] == 'c':
+            POG_units[key+'s'] = units
+        else:
+            for unit in units:
+                POG_units[unit.name] = unit
+
+    return POG_units
