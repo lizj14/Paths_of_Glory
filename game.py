@@ -6,8 +6,8 @@ CARD_NUM = 8
 
 class GameParameter:
     def __init__(start_vp, get_Eight_gun):
-        self._vp = start_vp
-        self._turn = 0
+        self.vp = start_vp
+        self.turn = 0
         self._cards = dict()
         self._condition = set()
         self.initialize_cards(get_Eight_gun=get_Eight_gun, card_number=CARD_NUM)
@@ -27,6 +27,9 @@ class GameParameter:
         self._cards['cp_discard'] = card_lists[8]
         self._cards['ap_discard'] = card_lists[9]
 
+    def win_judge(self):
+        pass        
+
 # This class is the main logic of the game
 def Game:
     def __init__(self):
@@ -36,7 +39,13 @@ def Game:
     def run(self):
         start_vp_change = decide_side()
         get_Eight_gun = get_Eight_Gun()
-        self.game_data = GameParameter(start_vp = 10+start_vp_change)
+        self.game_data = GameParameter(start_vp = 10+start_vp_change, get_Eight_gun=get_Eight_gun)
+        while self.game_data.turn < 20:
+            self.run_turn
+ 
+
+    def run_turn(self):
+        pass
 
 #@TODO: the process of side decision is not implemented here. If necessary, it is easy to add later.
 def decide_side():
