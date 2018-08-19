@@ -20,3 +20,17 @@ def cp_action(to_print):
 
 def ap_action(to_print):
     print_side(side = 'ap', to_print = to_print)
+
+player_code = {
+    'cp':1,
+    'ap':-1,
+    'neutral':0
+}
+player_name = {
+    1:'CP',
+    -1:'AP',
+    0:'Neutral'
+}
+cp = player_code['cp']
+ap = player_code['ap']
+

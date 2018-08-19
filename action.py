@@ -18,6 +18,7 @@ set_order_info = set([
     'orders',
 ])
 
+# This class is an action turn of one side.
 class ActionTurn:
     def __init__(self, side, game_parameters):
         self.side = side
@@ -30,6 +31,7 @@ class ActionTurn:
         #TODO: add the cancel effect
             pass
         self.order_list = []
+        # this means that the operation turn has not been used
         self.ops = -1
     
     def show_hands(self):
@@ -58,3 +60,20 @@ class ActionTurn:
             print(self.data._cards['%s_hand'%self.side]
         elif order == 'location':
             loc = input('system >>> input the name of location')
+            if loc in self.data._map.hexes:
+                print_system(self.data._map.hexes[loc])
+            else:
+                print_system('no_such_location')
+
+# The model class for op, sr, rp, for they have more than one op to use. And maybe you want to cancel the effect before final decision
+class Order:
+    def __init__(self):
+        pass
+
+    # execute the order. 
+    def execute(self):
+        pass
+
+    # cancel the effect of the order.
+    def cancel(self):
+        pass

@@ -2,26 +2,36 @@ from common import *
 import cards
 import units
 import maps
+import action
 
 CARD_NUM = 8
 
 di_mandated_offensive = {
     'cp': {
-    1: 'AUS',
-    2: 'AUS vs ITA',
-    3: 'TUR',
-    4: 'GER',
+    0: 'accomplish',
+    1: 'AH',
+    2: 'AH vs IT',
+    3: 'TU',
+    4: 'GE',
     5: 'no',
     6: 'no', 
 },
     'ap': {
-    1: 'FRA',
-    2: 'FRA',
-    3: 'BRI',
-    4: 'ITA',
-    5: 'RUS',
+    0: 'accomplish',
+    1: 'FR',
+    2: 'FR',
+    3: 'BR',
+    4: 'IT',
+    5: 'RU',
     6: 'no',
 }
+}
+
+di_country_state = {
+    'peace': 0,
+    'at_war': 1,
+    'capital_occupied': 2,
+    'surrunder': 3,
 }
 
 class GameParameter:
@@ -31,16 +41,26 @@ class GameParameter:
         self._cards = dict()
         self._condition = set()
         self.initialize_cards(get_Eight_gun=get_Eight_gun, card_number=CARD_NUM)
-        self._units = _initialize_units()        
-        #@TODO: here needs a function of map initialize.
-        self._map =  
+        self._units = _initialize_units()
+ 
+        #@TODO: there is a conflict to resolve: units in map or outside?
+        self._map = maps.test_map() 
         self.end_vp = end_vp
         self.parameters = {
+            'cp_war_state': 0,
+            'ap_war_state': 0,
             'cp_man_offensive': 0,
             'ap_man_offensive': 0,
             'cp_last_operation': '',
             'ap_last_operation': '',
         }
+
+        #@TODO: need to check whether it is enough.
+        self.country_state = {}
+        for country_name in ['FR','BR','BE','GE','AH','RU','SB','MN']:
+            self.country_state[country_name] = di_country_state['at_war']
+        for country_name in ['TU','IT','RO','US','GR','BU']:
+            self.country_state[country_name] = di_country_state['peace']
 
     def initialize_cards(self, get_Eight_gun, card_number):
         card_lists = card._initialize_cards(get_Eight_gun=get_Eight_gun, card_number=card_number)
@@ -56,7 +76,13 @@ class GameParameter:
         self._cards['ap_discard'] = card_lists[9]
 
     def win_judge(self):
-        pass        
+        pass  
+
+    def add_condition(self, new_condition):
+        self._condition.add(new_condition)
+
+    def has_condition(self, condition):
+        return condition in self._condition
 
 # This class is the main logic of the game
 def Game:
@@ -74,6 +100,14 @@ def Game:
 
     def run_turn(self):
         self.mandated_offensive_phase()
+        self.action_phase()
+        self.supply_phase()
+        self.siege_phase()
+        if self.game_data.turn != 0:
+            self.war_state_phase()
+        self.replacement_phase()
+        self.card_phase()
+        self.game_data.turn += 1
 
     def mandated_offensive_phase(self):
         self.mandated_offensive_side(side = 'cp')
@@ -82,16 +116,102 @@ def Game:
     def mandated_offensive_side(self, side):
         number = d6()
         print_side(side=side, to_print='mandated offensive roll: %s' % di_mandated_offensive[side][number])
-        self.parameters['%s_man_offensive'%side] = number
+        self.game_data.parameters['%s_man_offensive'%side] = number
 
     def action_phase(self):
         for i in range(0, 6):
-            pass
+            self.action_side(side='cp')
+            self.action_side(side='ap')
  
     def action_side(self, side):
         print_side(side=side, to_print='wait for act')
-        
+        act_turn = action.ActionTurn(side=side, game_parameter=self.game_data)
+        act_turn.run()
+ 
+    def supply_phase(self):
+        to_destroy = []
+        for hex_now in self.game_data._map.hexes.keys():
+            if self.game_data._map.hexes[hex_now].xxx: #@TODO: here need a method to judge if in supply. Later we shall add a method in maps.py
+                to_destroy.add(hex_now)
+        for hex_now in to_destroy:
+            #@TODO: here need to add the destroy of the units in the hex. 
 
+    def siege_phase(self):
+        hexes = self.game_data._map.hexes
+        for hex_name in hexes.keys():
+            hex_now = hexes[hex_name]
+            if hex_now.fort != 0 and len(hex_now.units) != 0 and hex_now.controller != hex_now.units[0] #@TODO: here need a new method to define the side of the unit.
+                d_result = d6() if self.game_data.turn >= 2 else d6()-2:
+                if d_result > hex_now.fort:
+                    self.game_data.vp += hex_now.transfer_controller()
+                    print_system('%s surrunderres under siege.' % hex_name)
+                else:
+                    print_system('%s does not surrunder under siege.' % hex_name)
+
+    def war_state_phase(self):
+        #@TODO: check for the effect of card, for example, Blockade.
+      
+        self.check_for_mandated_offensive()
+        
+        #@TODO: need to add the check for auto win or truce.
+
+        self.check_war_state('cp')
+        self.check_war_state('ap')   
+
+    def check_war_state(self, side):
+        for stage_new, war_state_need in [['limited_war', 4], ['total_war', 11]]:
+            if not self.game_data.has_condition('%s_%s' % (side, stage_new):
+                if self.game_data.parameters['%s_war_state'%side] >= war_state_need:
+                    self.game_data._cards['%s_mobilization'%side].add_cards(self.game_data._cards['%s_%s'% (side, stage_new)].get_all_cards())
+                    self.game_data._cards['%s_mobilization'%side].add_cards(self.game_data._cards['%s_discard'].get_all_cards())
+                    self.game_data._cards['%s_mobilization'%side].shuffle()
+                    print_side(side=side, to_print='enters %s' % (stage_new))
+
+    def check_for_mandated_offensive(self):
+        cp_state = self.game_data.parameters['cp_man_offensive']
+        if cp_state != di_mandated_offensive['cp']['accomplish'] and cp_state != di_mandated_offensive['cp']['no']:
+            if cp_state == di_mandated_offensive['cp']['AH vs IT'] and self.game_data.country_state['IT'] == di_country_state['peace']:
+                pass
+            elif cp_state == di_mandated_offensive['cp']['TU'] and self.game_data.country_state['TU'] == di_country_state['peace']:
+                pass
+            else:
+                self.game_data.vp -= 1
+        ap_state = self.game_data.parameters['ap_man_offensive']
+        if ap_state != di_mandated_offensive['ap']['accomplish']:
+            if ap_state == di_mandated_offensive['ap']['IT'] and self.game_data.country_state['IT'] == di_country_state['peace']:
+                pass
+            #@TODO: need to check after make the card
+            elif ap_state == di_mandated_offensive['ap']['FR'] and self.game_data.has_condition('FR_bingbian'):
+                pass
+            else:
+                self.game_data.vp += 1
+
+
+    def replacement_phase(self):
+        pass
+           
+    def card_phase(self):
+        self.card_reinforce_side(side='cp')
+        self.card_reinforce_side(side='ap')
+
+    def card_reinforce_side(self,side):
+        print(self.game_data._cards['%s_hand'%side])
+        #@TODO: I have forgotten whether remove can be used in list like this. Need verification
+        for card in self.game_data._cards['%s_hand'%side]:
+            if card.cc:
+                print_system('discard %s? print yes to discard, other not to' % card.name)
+                ok = input()
+                if ok == 'yes':
+                    self.game_data._cards.remove_card(card_no=card.no)
+
+        number_now = self.game_data._cards['%s_hand'%side].card_number()
+        card_remain = self.game_data._cards['%s_mobilization'%side].card_number()
+        if number_now + card_remain <= CARD_NUM:
+            self.game_data._cards['%s_hand'%side].add_cards(self.game_data._cards['%s_mobilization'%side].get_all_cards())
+            cards.merge_cards(self.game_data._cards['%s_mobilization'%side], self.game_data._cards['%s_discard'%side])
+        else:
+            self.game_data._cards['%s_hand'%side].add_cards(self.game_data._cards['%s_mobilization'%side].get_cards(number=CARD_NUM-number_now)
+ 
 #@TODO: the process of side decision is not implemented here. If necessary, it is easy to add later.
 def decide_side():
     print_system('input the vp decided: ')
@@ -102,9 +222,13 @@ def decide_side():
     return num
 
 def get_Eight_Gun():
-    print_system('the cp decide: if you want to get hte Eight Gun:')
+    print_system('the cp decide: if you want to get the Eight Gun:')
     print_system('print y / n. Anything except n will be seemed as y')
     y_n = input()
     if y_n == 'n':
         return False
-    return True 
+    return True
+
+if __name__ == '__main__':
+    game = Game()
+    game.run()

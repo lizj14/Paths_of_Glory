@@ -35,18 +35,7 @@ def _get_terrain():
 
 clear, forest, mountain, swamp, desert = _get_terrain()
 
-player_code = {
-    'cp':1,
-    'ap':-1,
-    'neutral':0
-}
-player_name = {
-    1:'CP',
-    -1:'AP',
-    0:'Neutral'
-}
-cp = player_code['cp']
-ap = player_code['ap']
+#@TODO: notice: ap and cp has been moved into common.py
 
 class MapHex:
     def __init__(self, name, terrain, **kwargs):
@@ -105,6 +94,17 @@ class MapHex:
 
         return main_status
 
+    def surrunder_under_siege(self):
+        self.fort = 0
+        return self.transfer_controller()
+
+    def transfer_controller(self):
+        self.controller *= -1
+        print_system('%s has controlled %s' % (player_name[self.controller], self.name))
+        if self.isVPHex:
+            return self.controller
+        return 0
+
     def __str__(self):
         main_status = self.__repr__()
         neighbour_status = 'neighbours:'+','.join([n[0] for n in self.neighbours])
@@ -134,6 +134,7 @@ from units import POG_units
 
 def test_map():
     units = POG_units()
+    
     map = Map()
     map.game_params['mapName'] = 'France 1916'
 

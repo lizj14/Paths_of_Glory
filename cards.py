@@ -89,6 +89,9 @@ class CardList:
         self.card = []
         return to_get
 
+    def card_number(self):
+        return len(self.card_list)
+
 # This class, printing only the number of cards.
 class CardStore(CardList):
     def __str__(self):

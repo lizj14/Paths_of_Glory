@@ -1,5 +1,6 @@
 from common import *
 
+
 # class Unit
 # the basic unit class in pog
 # properties: name, attack, defence, movement, isflipped;
