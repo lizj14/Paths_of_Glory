@@ -1,18 +1,46 @@
 from common import *
 import cards
 import units
+import maps
 
 CARD_NUM = 8
 
+di_mandated_offensive = {
+    'cp': {
+    1: 'AUS',
+    2: 'AUS vs ITA',
+    3: 'TUR',
+    4: 'GER',
+    5: 'no',
+    6: 'no', 
+},
+    'ap': {
+    1: 'FRA',
+    2: 'FRA',
+    3: 'BRI',
+    4: 'ITA',
+    5: 'RUS',
+    6: 'no',
+}
+}
+
 class GameParameter:
-    def __init__(start_vp, get_Eight_gun):
-        self.vp = start_vp
+    def __init__(end_vp, get_Eight_gun):
+        self.vp = 10
         self.turn = 0
         self._cards = dict()
         self._condition = set()
         self.initialize_cards(get_Eight_gun=get_Eight_gun, card_number=CARD_NUM)
         self._units = _initialize_units()        
-        #@TODO: here needs a function of map initialize. 
+        #@TODO: here needs a function of map initialize.
+        self._map =  
+        self.end_vp = end_vp
+        self.parameters = {
+            'cp_man_offensive': 0,
+            'ap_man_offensive': 0,
+            'cp_last_operation': '',
+            'ap_last_operation': '',
+        }
 
     def initialize_cards(self, get_Eight_gun, card_number):
         card_lists = card._initialize_cards(get_Eight_gun=get_Eight_gun, card_number=card_number)
@@ -37,15 +65,32 @@ def Game:
         # self.game_data = GameParameter()
 
     def run(self):
-        start_vp_change = decide_side()
+        end_vp_change = decide_side()
         get_Eight_gun = get_Eight_Gun()
-        self.game_data = GameParameter(start_vp = 10+start_vp_change, get_Eight_gun=get_Eight_gun)
+        self.game_data = GameParameter(end_vp = 10+end_vp_change, get_Eight_gun=get_Eight_gun)
         while self.game_data.turn < 20:
-            self.run_turn
+            self.run_turn()
  
 
     def run_turn(self):
-        pass
+        self.mandated_offensive_phase()
+
+    def mandated_offensive_phase(self):
+        self.mandated_offensive_side(side = 'cp')
+        self.mandated_offensive_side(side = 'ap') 
+    
+    def mandated_offensive_side(self, side):
+        number = d6()
+        print_side(side=side, to_print='mandated offensive roll: %s' % di_mandated_offensive[side][number])
+        self.parameters['%s_man_offensive'%side] = number
+
+    def action_phase(self):
+        for i in range(0, 6):
+            pass
+ 
+    def action_side(self, side):
+        print_side(side=side, to_print='wait for act')
+        
 
 #@TODO: the process of side decision is not implemented here. If necessary, it is easy to add later.
 def decide_side():
