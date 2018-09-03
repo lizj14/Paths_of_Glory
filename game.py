@@ -31,7 +31,24 @@ di_country_state = {
     'peace': 0,
     'at_war': 1,
     'capital_occupied': 2,
-    'surrunder': 3,
+#    'surrunder': 3,
+}
+
+# need to add the situation of Rus.
+di_Russia_status = {
+    'Gold_Save_the_Tsar': 0,
+    'Tsar_Takes_Command_Allowed': 1,
+    'Fall_of_the_Tsar_Allowed': 2,
+    'Fall_of_the_Tsar': 3,
+    'Bolshevik_Revolution': 4,
+    'Treaty_of_Brest-Litovsk': 5,
+}
+
+di_US_status = {
+    'no': 0,
+    'Zimmermann_Telegram_Allowed': 1,
+    'Zimmermann_Telegram': 2,
+    'Over_There': 3,
 }
 
 class GameParameter:
@@ -41,10 +58,11 @@ class GameParameter:
         self._cards = dict()
         self._condition = set()
         self.initialize_cards(get_Eight_gun=get_Eight_gun, card_number=CARD_NUM)
-        self._units = _initialize_units()
- 
+        #self._units = _initialize_units()
+        self._units = POG_units() 
+
         #@TODO: there is a conflict to resolve: units in map or outside?
-        self._map = maps.test_map() 
+        self._map = maps.test_map(self._units) 
         self.end_vp = end_vp
         self.parameters = {
             'cp_war_state': 0,
@@ -53,6 +71,8 @@ class GameParameter:
             'ap_man_offensive': 0,
             'cp_last_operation': '',
             'ap_last_operation': '',
+            'Ru_status': 0,
+            'US_status': 0,
         }
 
         #@TODO: need to check whether it is enough.
@@ -83,6 +103,28 @@ class GameParameter:
 
     def has_condition(self, condition):
         return condition in self._condition
+
+    #@property
+    #def cp_war_state(self):
+    #    return self.parameters['cp_war_state']
+
+    #@property
+    #def ap_war_state(self):
+    #    return self.parameters['ap_war_state']
+
+    def Zimmermann_Allowed(self):
+        if self.parameters['cp_war_state'] + self.parameters['ap_war_state'] >= 30:
+            self.parameters['US_status'] = di_US_status['Zimmermann_Telegram_Allowed']
+
+    #@cp_war_state.setter
+    #def cp_war_state(self, value):
+    #    self.parameters['cp_war_state'] = value
+    #    self.Zimmermann_Allowed()
+
+    #@ap_war_state.setter
+    #def ap_war_state(self, value):
+    #    self.parameters['ap_war_state'] = value
+    #    self.Zimmermann_Allowed()
 
 # This class is the main logic of the game
 def Game:
@@ -196,13 +238,17 @@ def Game:
 
     def card_reinforce_side(self,side):
         print(self.game_data._cards['%s_hand'%side])
-        #@TODO: I have forgotten whether remove can be used in list like this. Need verification
+        #@TODO: I have forgotten whether remove can be used in list like this. Need verification. has revised, need to debug
+        to_discard = []
         for card in self.game_data._cards['%s_hand'%side]:
             if card.cc:
                 print_system('discard %s? print yes to discard, other not to' % card.name)
                 ok = input()
                 if ok == 'yes':
-                    self.game_data._cards.remove_card(card_no=card.no)
+                    to_discard.append(card)
+                    #self.game_data._cards.remove_card(card_no=card.no)
+        for card in to_discard:
+            self.game_data._cards.remove_card(card_no=card.no)
 
         number_now = self.game_data._cards['%s_hand'%side].card_number()
         card_remain = self.game_data._cards['%s_mobilization'%side].card_number()

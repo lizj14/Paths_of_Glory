@@ -130,10 +130,12 @@ class Map:
         self.hexes[name2].neighbours.append((name1,cond))
 
 
-from units import POG_units
+#from units import POG_units
 
-def test_map():
-    units = POG_units()
+#def test_map():
+#    units = POG_units()
+
+def test_map(unit):
     
     map = Map()
     map.game_params['mapName'] = 'France 1916'
