@@ -27,9 +27,9 @@ player_code = {
     'neutral':0
 }
 player_name = {
-    1:'CP',
-    -1:'AP',
-    0:'Neutral'
+    1:'cp',
+    -1:'ap',
+    0:'neutral'
 }
 cp = player_code['cp']
 ap = player_code['ap']

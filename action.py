@@ -21,14 +21,15 @@ set_order_info = set([
 # This class is an action turn of one side.
 class ActionTurn:
     def __init__(self, side, game_parameters):
-        self.side = side
+        # here need to add a dict to transfer.
+        self.side = player_code[side]
         self.data = game_parameters
         self.ops = -1
         self.order_list = []
  
     def cancel_orders(self):
         for order in self.order_list:
-        #TODO: add the cancel effect
+            #TODO: add the cancel effect
             pass
         self.order_list = []
         # this means that the operation turn has not been used
@@ -48,12 +49,35 @@ class ActionTurn:
                     card = input('system >>> input the card to use')
                     if card in self.data._cards:
                         #TODO: add the action function
+                        if order = 'operation':
+                            self.run_ops(card)  
                 elif order in set_order_without_card:
                     #TODO: add the action function
                 elif order in set_order_info:
                     self.show_info(order)
                 else:
                     print_system('the order cannot be found.')
+
+    def run_ops(self, card):
+        self.ops = card.op_points
+        while True:
+            print_system('%d points left. Input the location you want to activate.' % self.ops)
+            location = input()
+            if location in self.data._map.hexes:
+                self.ops -= self.activate_location(location)
+            else:
+                print_system('cannot find %s' % location) 
+      
+    # the return value is the reduction of the op points. return 0 means activation fail 
+    def activate_location(self, location): 
+        loc = self.data._map.hexes[location]
+        # if the units are the same side
+        if len(loc.units) == 0:
+            print_system('there is no unit in %s' % location)
+            return 0 
+        if loc.units[0].controller != self.side:
+            print_system('you cannot order the units of the opposite side')
+            return 0        
 
     def show_info(order):
         if order == 'hands':

@@ -1,5 +1,6 @@
 from common import *
 
+di_unit_controller = {}
 
 # class Unit
 # the basic unit class in pog
@@ -49,6 +50,11 @@ class Unit:
     @isFlipped.setter
     def isFlipped(self, value):
         self.flipped = (value==1)
+
+    # The controller of the units can be determined by the first two letters of the units.
+    @property
+    def controller(self):
+        return di_unit_controller[self.name[:2]]
 
     def __repr__(self):
         main_status = 'unit {}-{}-{} {}'.format(
@@ -175,6 +181,11 @@ def _initialize_units():
                 unit.isIT = True
             elif key in ['BEF', 'BEFc', 'CNDc', 'AUSc', 'PTc', 'Alb', 'MEF']:
                 unit.isBR = True
+        #@TODO: So far as I remember, you can define the side of the unit by the two first letters. Q: what is 'Alb'?
+        for country_key in ['BR', 'FR', 'IT', 'RU', 'SB', 'MN', 'RO', 'GR', 'US', 'AN', 'Al', 'PT', 'CN', 'AoO', 'AU', 'ME']:
+            di_unit_controller[country_key] = ap
+        for country_key in ['GE', 'AH', 'TU', 'BU', 'YL', 'SN']:
+            di_unit_controller[country_key] = cp
     return all_units
 
 def POG_units():

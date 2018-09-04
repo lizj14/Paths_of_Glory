@@ -182,7 +182,7 @@ def Game:
         hexes = self.game_data._map.hexes
         for hex_name in hexes.keys():
             hex_now = hexes[hex_name]
-            if hex_now.fort != 0 and len(hex_now.units) != 0 and hex_now.controller != hex_now.units[0] #@TODO: here need a new method to define the side of the unit.
+            if hex_now.fort != 0 and len(hex_now.units) != 0 and hex_now.controller != hex_now.units[0].controller #@TODO: here need a new method to define the side of the unit. has add, need to check
                 d_result = d6() if self.game_data.turn >= 2 else d6()-2:
                 if d_result > hex_now.fort:
                     self.game_data.vp += hex_now.transfer_controller()
