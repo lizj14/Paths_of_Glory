@@ -16,6 +16,7 @@ class Unit:
 
         self.isArmy = False
         self.rpCountry = None
+        self.opCountry = None
         self.canSRNE = False
         self.canMVNE = False
 
@@ -82,6 +83,17 @@ class Unit:
 
         return main_status+'\n'+rp_status+'\n'+ne_status
 
+    def __lt__(self, other):
+        if self.name in ['GE11', 'GE11-']:
+            return True
+        elif other.name in ['GE11', 'GE11-']:
+            return False
+        if self.opCountry != other.opCountry:
+            return di_op_country_no[self.opCountry] < di_op_country_no[other.opCountry]
+        elif self.isArmy and not other.isArmy:
+            return True
+        else:
+            return False 
 
 def _duplicate_units(n, format_string, empty_no, *unit_params):
     return [Unit(format_string.format(i),*unit_params)
@@ -181,8 +193,23 @@ def _initialize_units():
                 unit.isIT = True
             elif key in ['BEF', 'BEFc', 'CNDc', 'AUSc', 'PTc', 'Alb', 'MEF']:
                 unit.isBR = True
+
+            unit.opCountry = unit.rpCountry 
+            if unit.isBR:
+                unit.opCountry = 'BR'
+            elif key in ['BEc', 'BEa', 'ROc', 'GRc']:
+                unit.opCountry = key[:2]
+            elif key in ['MNc', 'SBa', 'SBc']:
+                unit.opCountry = 'SB'
+            elif key in ['SNc', 'YLD', 'AoI']:
+                unit.opCountry = 'TU'
+            elif key == 'CAU':
+                unit.opCountry = 'RU'
+            elif key == 'AoO':
+                unit.opCountry = 'FR'
+
         #@TODO: So far as I remember, you can define the side of the unit by the two first letters. Q: what is 'Alb'?
-        for country_key in ['BR', 'FR', 'IT', 'RU', 'SB', 'MN', 'RO', 'GR', 'US', 'AN', 'Al', 'PT', 'CN', 'AoO', 'AU', 'ME']:
+        for country_key in ['BR', 'FR', 'IT', 'RU', 'SB', 'MN', 'RO', 'GR', 'US', 'AN', 'Al', 'PT', 'CN', 'Ao', 'AU', 'ME']:
             di_unit_controller[country_key] = ap
         for country_key in ['GE', 'AH', 'TU', 'BU', 'YL', 'SN']:
             di_unit_controller[country_key] = cp

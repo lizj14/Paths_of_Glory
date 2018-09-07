@@ -65,19 +65,70 @@ class ActionTurn:
             location = input()
             if location in self.data._map.hexes:
                 self.ops -= self.activate_location(location)
+            elif location == 'cancel':
+                self.cancel_actions()
             else:
                 print_system('cannot find %s' % location) 
       
+    def cancel_actions(self):
+        self.ops = 0
+        for action_now in self.order_list:
+            action_now.cancel()
+        self.order_list = []
+
     # the return value is the reduction of the op points. return 0 means activation fail 
     def activate_location(self, location): 
         loc = self.data._map.hexes[location]
+        sort(loc.units)
         # if the units are the same side
         if len(loc.units) == 0:
             print_system('there is no unit in %s' % location)
             return 0 
-        if loc.units[0].controller != self.side:
+        elif loc.units[0].controller != self.side:
             print_system('you cannot order the units of the opposite side')
-            return 0        
+            return 0
+        #@TODO: OOS
+        elif loc.units[0].OOS:
+            print_system('the units are OOS. So sorry.')
+            return 0
+
+        op_cost = self.calculate_ops(loc)
+        if self.ops < op_cost:
+            print_system('no enough ops. %d need' % op_cost)
+            return 0
+        return op_cost
+
+    def calculate_ops(self, loc):
+        exist_country = []
+        GE11 = False
+        for unit_now in loc.units:
+            if self.data.has_condition('11th_Army') and unit_now.name in ['GE11', 'GE11-']:
+                exist_country = ['GE']
+                GE11 = True
+            elif unit_now.opCountry in exist_country:
+                pass
+                #@TODO: I found that I make a mistake with the rule of Russia.
+                #if self.data.parameters['Ru_status'] >= di_Russia_status['Fall_of_the_Tsar'] and unit_now.opCountry == 'RU':
+                #    op_sum += 1 
+                #else:
+                #    pass
+            elif unit_now.opCountry == 'BE' and loc.name in ['Antwerp', 'Ostend', 'Calais', 'Amiens']:
+                if not 'BR' in exist_country:
+                    exist_country.append('BR')
+            elif unit_now.opCountry == 'US' and loc.name : #@TODO: France and German? 
+                if not 'FR' in exist_country:
+                    exist_country.append('FR')
+            elif GE11 and not unit_now.isArmy:
+                pass
+            elif self.data.has_condition('Sud_Army') and \
+                unit_now.opCountry == 'GE' and not unit_now.isArmy and \
+                'AH' in exist_country:
+                pass
+            else:
+                exist_country.append(unit_now.opCountry)
+                
+        if loc.fort != 0 and not loc.fort_country in exist_country:
+            exist_country.append(loc.fort_country)
 
     def show_info(order):
         if order == 'hands':

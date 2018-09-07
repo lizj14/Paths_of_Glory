@@ -34,3 +34,19 @@ player_name = {
 cp = player_code['cp']
 ap = player_code['ap']
 
+di_op_country_no = {
+    'BR': 0,
+    'FR': 1,
+    'RU': 2,
+    'IT': 3,
+    'BE': 4,
+    'SB': 5,
+    'RO': 6,
+    'GR': 7,
+    'US': 8,
+    
+    'AH': 20,
+    'GE': 21,
+    'TU': 22,
+    'BU': 23,
+}

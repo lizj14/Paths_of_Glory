@@ -49,6 +49,7 @@ class MapHex:
         self.controller = kwargs['controller'] if 'controller' in kwargs else 0
         self.fort = kwargs['fort'] if 'fort' in kwargs else 0 # 0 to 3
         self.trench = kwargs['trench'] if 'trench' in kwargs else 0 # 0 to 2
+        self.fort_country = kwargs['fort_country'] if 'fort_country' in kwargs else ''
 
         self.units = kwargs['units'] if 'units' in kwargs else []
         self.neighbours = []
@@ -141,7 +142,7 @@ def test_map(unit):
     map.game_params['mapName'] = 'France 1916'
 
     map.hexes['Paris'] = MapHex('Paris',clear,isVPHex=True,fort=1,trench=1,
-        units=[units['FRcs'][0]],controller=ap,
+        units=[units['FRcs'][0]],controller=ap,fort_country='FR',
         supplyFrom='London'
     )
     map.hexes['C-T'] = MapHex('C-T',clear,isVPHex=False,trench=1,
@@ -150,7 +151,7 @@ def test_map(unit):
     )
     map.hexes['Verdun'] = MapHex('Verdun',clear,isVPHex=True,fort=3,trench=1,
         units=[units['FR4'],units['FR5'],units['FR6']],controller=ap,
-        supplyFrom='London'
+        supplyFrom='London', fort_country='FR',
     )
     map.hexes['Cambrai'] = MapHex('Cambrai',clear,isVPHex=True,trench=1,
         units=[units['BR1'],units['BR2']],controller=ap,
@@ -185,7 +186,7 @@ def test_map(unit):
     )
     map.hexes['Metz'] = MapHex('Metz',clear,isVPHex=True,trench=2,fort=3,
         units=[units['GE7'],units['GE8'],units['GEcs'][0]],controller=cp,
-        supplyFrom='Essen'
+        supplyFrom='Essen',fort_country='GE',
     )
     map.hexes['Essen'] = MapHex('Essen',clear,isVPHex=True,
         units=[],controller=cp,
