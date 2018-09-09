@@ -60,11 +60,23 @@ class ActionTurn:
 
     def run_ops(self, card):
         self.ops = card.op_points
+        activation_places = []
+        NE_activated = False
         while True:
             print_system('%d points left. Input the location you want to activate.' % self.ops)
             location = input()
-            if location in self.data._map.hexes:
+            if location in self.data._map.hexes.keys():
+                if location in activation_places:
+                    print_system('%s has been activation this turn.' % location)
+                    continue
+                elif self.data._map.hexes[location].isNE and self.side = player_code['ap']:
+                    if not NE_activated:
+                        NE_activated = True
+                    else:
+                        print_system('ap can only activate in NE once per turn')
+                        continue
                 self.ops -= self.activate_location(location)
+                activation_places.append(location)
             elif location == 'cancel':
                 self.cancel_actions()
             else:
@@ -79,7 +91,8 @@ class ActionTurn:
     # the return value is the reduction of the op points. return 0 means activation fail 
     def activate_location(self, location): 
         loc = self.data._map.hexes[location]
-        sort(loc.units)
+        all_OOS = True
+        # sort(loc.units)
         # if the units are the same side
         if len(loc.units) == 0:
             print_system('there is no unit in %s' % location)
@@ -87,23 +100,41 @@ class ActionTurn:
         elif loc.units[0].controller != self.side:
             print_system('you cannot order the units of the opposite side')
             return 0
-        #@TODO: OOS
-        elif loc.units[0].OOS:
-            print_system('the units are OOS. So sorry.')
-            return 0
+        #@TODO: OOS. only unable to activate when all OOS
+        #elif loc.units[0].OOS:
+        else:
+            for unit_now in loc.units:
+                if not unit_now.OOS:
+                    all_OOS = False
+            if all_OOS:
+                print_system('all the units are OOS. So sorry.')
+                return 0
 
+        sort(loc.units)
+        print(loc.units)
         op_cost = self.calculate_ops(loc)
         if self.ops < op_cost:
             print_system('no enough ops. %d need' % op_cost)
             return 0
+
+        op_mode = self.op_mode()
         return op_cost
+
+    def op_mode(self):
+        while True:
+            mode = di_op_mode.get(input('move or attack?'), None)
+            if mode is None:
+                print('please input move or attack')
+            else:
+                return mode
 
     def calculate_ops(self, loc):
         exist_country = []
         GE11 = False
         for unit_now in loc.units:
             if self.data.has_condition('11th_Army') and unit_now.name in ['GE11', 'GE11-']:
-                exist_country = ['GE']
+                # in the sort, 'GE11' is always the first
+                exist_country.append('GE')
                 GE11 = True
             elif unit_now.opCountry in exist_country:
                 pass
@@ -124,11 +155,14 @@ class ActionTurn:
                 unit_now.opCountry == 'GE' and not unit_now.isArmy and \
                 'AH' in exist_country:
                 pass
+            elif GE11 and not unit_now.isArmy:
+                pass
             else:
                 exist_country.append(unit_now.opCountry)
                 
         if loc.fort != 0 and not loc.fort_country in exist_country:
             exist_country.append(loc.fort_country)
+        return len(exist_country)
 
     def show_info(order):
         if order == 'hands':

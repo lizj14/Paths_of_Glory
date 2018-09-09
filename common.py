@@ -50,3 +50,8 @@ di_op_country_no = {
     'TU': 22,
     'BU': 23,
 }
+
+di_op_mode = {
+    'attack': 0,
+    'move': 1,
+}
